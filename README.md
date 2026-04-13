@@ -1,8 +1,8 @@
-# AWS Hybrid Platform — Serverless + Container Platform
+# AWS Hybrid Platform
 
 A production-grade hybrid platform mixing EKS containerised workloads with Lambda serverless functions, built to demonstrate senior-level DevOps engineering on AWS.
 
-**Live API endpoint:** `https://pkzpdsbjya.execute-api.us-east-1.amazonaws.com/dev/hello`
+**Live API:** `https://pkzpdsbjya.execute-api.us-east-1.amazonaws.com/dev/hello`
 
 ---
 
@@ -11,13 +11,57 @@ A production-grade hybrid platform mixing EKS containerised workloads with Lambd
 | Category | Tool |
 |---|---|
 | CI/CD | Jenkins (on EKS) |
-| IaC | Terraform (HCL) |
+| IaC | Terraform |
 | Cloud | AWS (EKS, Lambda, S3, RDS, ECR) |
 | Containers | Docker + Kubernetes (EKS) |
 | Security | Trivy + OPA/Gatekeeper |
 | Secrets | AWS Secrets Manager + HashiCorp Vault |
 | Monitoring | Datadog |
 | Networking | AWS VPC + Calico CNI |
+
+---
+
+## Jenkins CI/CD on EKS
+
+![Jenkins Dashboard](docs/images/jenkins-dashboard.png)
+
+Jenkins runs as a pod inside the EKS cluster, accessible via AWS Load Balancer. Pipelines automate build, scan, and deploy on every push to main.
+
+---
+
+## Datadog Observability
+
+![Datadog Kubernetes](docs/images/datadog-kubernetes.png)
+
+Real-time metrics from the live EKS cluster showing 21 pods across all namespaces, 3 worker nodes at 100% ready, CPU and memory usage — all deployments visible including Jenkins, Vault, Trivy and Gatekeeper.
+
+---
+
+## Lambda — Serverless Functions
+
+![Lambda Function](docs/images/lambda-function.png)
+
+Two Lambda functions deployed via Terraform:
+
+- **s3-processor** — triggered automatically on S3 file uploads
+- **api-handler** — HTTP endpoint via API Gateway
+
+Live response:
+```json
+{
+  "message": "Hello from AWS Lambda on EKS Hybrid Platform!",
+  "timestamp": "2026-04-13T22:49:05.549Z",
+  "project": "hybrid-platform"
+}
+```
+
+---
+
+## Data Layer
+
+![RDS Database](docs/images/rds-database.png)
+
+RDS PostgreSQL deployed in private subnet — unreachable from the internet. Only accessible from within the VPC by EKS pods and Lambda functions. Credentials managed by HashiCorp Vault.
 
 ---
 
@@ -51,17 +95,6 @@ AWS Secrets Manager + Vault | Datadog observability
 
 ---
 
-## What Makes It Senior-Level
-
-- **Terraform modules with remote state** — S3 backend + DynamoDB locking prevents concurrent state corruption
-- **OPA policy-as-code** — Gatekeeper enforces "no root containers" at Kubernetes admission level
-- **Vault dynamic secrets** — credentials generated on-demand, never stored long-term
-- **Hybrid architecture** — EKS long-running services + Lambda event-driven functions in the same VPC
-- **Trivy scanning** — every image scanned for CVEs before deployment
-- **Datadog observability** — full cluster visibility with logs and infrastructure metrics
-
----
-
 ## Infrastructure (Terraform IaC)
 
 All AWS infrastructure defined as code. Single command deploys everything:
@@ -72,64 +105,7 @@ terraform init
 terraform apply
 ```
 
-Provisions: VPC with public/private subnets, EKS cluster, Lambda functions, API Gateway, S3 buckets, RDS PostgreSQL, ECR repository — all tagged and cost-tracked.
-
----
-
-## Jenkins CI/CD on EKS
-
-Jenkins runs as a pod inside the EKS cluster, accessible via AWS Load Balancer. Pipelines automate build, scan, and deploy on every push.
-
-![Jenkins Dashboard](docs/images/jenkins-dashboard.png)
-
----
-
-## Lambda — Serverless Functions
-
-Two Lambda functions deployed via Terraform:
-
-- **s3-processor** — triggered automatically on S3 file uploads
-- **api-handler** — HTTP endpoint via API Gateway
-
-![Lambda Function](docs/images/lambda-function.png)
-
-Live response:
-```json
-{
-  "message": "Hello from AWS Lambda on EKS Hybrid Platform!",
-  "timestamp": "2026-04-13T22:49:05.549Z",
-  "project": "hybrid-platform"
-}
-```
-
----
-
-## Security Hardening
-
-**OPA/Gatekeeper** — policy enforced at Kubernetes admission level, no containers may run as root.
-
-**HashiCorp Vault** — secrets stored and rotated dynamically:
-```bash
-vault kv get secret/hybrid-platform/database
-```
-
-**AWS Secrets Manager** — static secrets synced from Vault for Lambda and RDS access.
-
----
-
-## Datadog Observability
-
-Datadog Agent deployed as DaemonSet on EKS. Monitors 21 pods across all namespaces, 3 worker nodes, CPU and memory usage, and all deployments including Jenkins, Vault, Trivy and Gatekeeper.
-
-![Datadog Kubernetes](docs/images/datadog-kubernetes.png)
-
----
-
-## Data Layer
-
-RDS PostgreSQL deployed in private subnet — unreachable from the internet. Only accessible from within the VPC by EKS pods and Lambda functions. Credentials managed by HashiCorp Vault.
-
-![RDS Database](docs/images/rds-database.png)
+Provisions: VPC with public/private subnets, EKS cluster, Lambda functions, API Gateway, S3 buckets, RDS PostgreSQL, ECR repository.
 
 ---
 
