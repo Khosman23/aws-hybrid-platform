@@ -56,6 +56,18 @@ module "lambda" {
   account_id   = "413612133747"
 }
 
+module "rds" {
+  source             = "../../modules/rds"
+  project_name       = "hybrid-platform"
+  vpc_id             = module.vpc.vpc_id
+  private_subnet_ids = module.vpc.private_subnet_ids
+  db_password        = "SecurePassword123!"
+}
+
+output "db_endpoint" {
+  value = module.rds.db_endpoint
+}
+
 output "api_endpoint" {
   value = module.lambda.api_endpoint
 }
