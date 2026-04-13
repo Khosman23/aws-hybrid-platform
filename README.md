@@ -23,6 +23,8 @@ A production-grade hybrid platform mixing EKS containerised workloads with Lambd
 
 ## Architecture
 
+![EKS Cluster](docs/images/eks-cluster.png)
+
 ```
 GitHub Repository
        │
@@ -78,6 +80,8 @@ Provisions: VPC with public/private subnets, EKS cluster, Lambda functions, API 
 
 Jenkins runs as a pod inside the EKS cluster, accessible via AWS Load Balancer. Pipelines automate build, scan, and deploy on every push.
 
+![Jenkins Dashboard](docs/images/jenkins-dashboard.png)
+
 ---
 
 ## Lambda — Serverless Functions
@@ -86,6 +90,8 @@ Two Lambda functions deployed via Terraform:
 
 - **s3-processor** — triggered automatically on S3 file uploads
 - **api-handler** — HTTP endpoint via API Gateway
+
+![Lambda Function](docs/images/lambda-function.png)
 
 Live response:
 ```json
@@ -115,11 +121,15 @@ vault kv get secret/hybrid-platform/database
 
 Datadog Agent deployed as DaemonSet on EKS. Monitors 21 pods across all namespaces, 3 worker nodes, CPU and memory usage, and all deployments including Jenkins, Vault, Trivy and Gatekeeper.
 
+![Datadog Kubernetes](docs/images/datadog-kubernetes.png)
+
 ---
 
 ## Data Layer
 
 RDS PostgreSQL deployed in private subnet — unreachable from the internet. Only accessible from within the VPC by EKS pods and Lambda functions. Credentials managed by HashiCorp Vault.
+
+![RDS Database](docs/images/rds-database.png)
 
 ---
 
