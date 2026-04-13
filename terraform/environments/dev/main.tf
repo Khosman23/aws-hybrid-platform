@@ -45,6 +45,29 @@ module "eks" {
   max_nodes          = 3
 }
 
+module "ecr" {
+  source          = "../../modules/ecr"
+  repository_name = "hybrid-platform-app"
+}
+
+module "lambda" {
+  source       = "../../modules/lambda"
+  project_name = "hybrid-platform"
+  account_id   = "413612133747"
+}
+
+output "api_endpoint" {
+  value = module.lambda.api_endpoint
+}
+
+output "s3_bucket_name" {
+  value = module.lambda.s3_bucket_name
+}
+
+output "ecr_repository_url" {
+  value = module.ecr.repository_url
+}
+
 output "vpc_id" {
   value = module.vpc.vpc_id
 }
